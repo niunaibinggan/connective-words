@@ -111,12 +111,12 @@
         oContainer.insertBefore(oBgWarpper, this.stage.canvas);
       },
       createPanel (type = 'panel') {
-        const { fillIcon, chooseIcon, bgIcon, errorIcon } = this.assets
+        const { errorIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
         const panel = new Panel({
           x: 0,
           y: 0,
-          images: { fillIcon, chooseIcon, bgIcon, errorIcon },
+          images: { errorIcon },
           questions: this.questions.content,
           alpha: this.setAlpha,
           answerQuestionsIds: this.answerQuestionsIds,

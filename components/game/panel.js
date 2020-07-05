@@ -5,8 +5,6 @@ export default class ResultPanel extends Hilo.Container {
     super(properties)
     this.stage = properties.stage
 
-    this.fillIcon = properties.images.fillIcon
-
     this.creatContainer()
 
     this.initBlock(properties)
@@ -32,7 +30,9 @@ export default class ResultPanel extends Hilo.Container {
   rect = [0, 0, 200, 86]
   targetNumber = 0
   statPosition = {}
-  fillIcon = null
+  bgIcon = require('~/static/bg_button.png')
+  chooseIcon = require('~/static/choose_button.png')
+  fillIcon = require('~/static/button.png')
   // setAnswer = []
   // resultIds = []
   // rotationDeg = 0
@@ -62,8 +62,8 @@ export default class ResultPanel extends Hilo.Container {
 
   initBlock (properties) {
     properties.questions.forEach((item, index) => {
-      this.commonBlock(this.temporaryQuestionsContainer, properties.images.bgIcon, item, index, false)
-      this.commonBlock(this.temporarySelectedContainer, properties.images.chooseIcon, item, index, true)
+      this.commonBlock(this.temporaryQuestionsContainer, this.bgIcon, item, index, false)
+      this.commonBlock(this.temporarySelectedContainer, this.chooseIcon, item, index, true)
     })
   }
   commonBlock (target, image, item, index, textVisible) {
@@ -77,15 +77,23 @@ export default class ResultPanel extends Hilo.Container {
       y: isLineBreak ? this.rect[3] + 20 : 0,
     }).addTo(target)
 
-    new Hilo.Bitmap({
+    // new Hilo.Bitmap({
+    //   id: { realId: index, questionId: item.id },
+    //   image,
+    //   rect: this.rect,
+    //   visible: true,
+    //   scaleX: 1,
+    //   scaleY: 1,
+    //   alpha: textVisible ? 0.9 : 1
+    // }).addTo(blockCon)
+
+    const creatView = new Hilo.View({
       id: { realId: index, questionId: item.id },
-      image,
-      rect: this.rect,
-      visible: true,
-      scaleX: 1,
-      scaleY: 1,
-      alpha: textVisible ? 0.9 : 1
+      width: this.rect[2],
+      height: this.rect[3]
     }).addTo(blockCon)
+
+    this.onloadImage(image, creatView, this)
 
     if (textVisible) {
       new Text({
@@ -117,6 +125,9 @@ export default class ResultPanel extends Hilo.Container {
         x: e.target.x,
         y: e.target.y
       }
+
+      this.onloadImage(this.chooseIcon, e.target.getChildAt(0), this)
+
       e.target.getChildAt(0).alpha = 1
       targetEvent = e
     })
@@ -133,13 +144,22 @@ export default class ResultPanel extends Hilo.Container {
         {
           duration: 200,
           onComplete () {
-            console.log(targetEvent.target.getChildAt(0).image)
+            that.onloadImage(that.fillIcon, targetEvent.target.getChildAt(0), that)
             targetEvent.target.getChildAt(0).alpha = .9
-            targetEvent.target.getChildAt(0).image = that.fillIcon
           }
         }
       )
     })
+  }
+
+  onloadImage (image, target, _this) {
+    const img = new Image()
+    img.src = image
+    img.onload = () => {
+      img.onload = null
+      const pattern = _this.stage.renderer.context.createPattern(img, 'no-repeat');
+      target.background = pattern;
+    }
   }
 }
 
