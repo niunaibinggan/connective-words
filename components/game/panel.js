@@ -3,8 +3,9 @@ import Text from './text'
 export default class ResultPanel extends Hilo.Container {
   constructor(properties) {
     super(properties)
-
     this.stage = properties.stage
+
+    this.fillIcon = properties.images.fillIcon
 
     this.creatContainer()
 
@@ -30,6 +31,8 @@ export default class ResultPanel extends Hilo.Container {
   setAnswerQuestionsId = []
   rect = [0, 0, 200, 86]
   targetNumber = 0
+  statPosition = {}
+  fillIcon = null
   // setAnswer = []
   // resultIds = []
   // rotationDeg = 0
@@ -44,16 +47,15 @@ export default class ResultPanel extends Hilo.Container {
   temporaryQuestionsContainer = null
   temporarySelectedContainer = null
 
-  // questionsLength = 0
 
   creatContainer () {
     this.temporaryQuestionsContainer = new Hilo.Container({
-      x: 260,
+      x: 220,
       y: 320,
     }).addTo(this)
 
     this.temporarySelectedContainer = new Hilo.Container({
-      x: 260,
+      x: 220,
       y: 660,
     }).addTo(this)
   }
@@ -65,21 +67,25 @@ export default class ResultPanel extends Hilo.Container {
     })
   }
   commonBlock (target, image, item, index, textVisible) {
-    const isLineBreak = (1920 - 260 * 2) - (this.rect[2] + 20) * index < 260
+    const isLineBreak = (1920 - 220 * 2) - (this.rect[2] + 5) * index < 220
 
-    if (!this.targetNumber && isLineBreak) {
-      this.targetNumber = index
-    }
+    if (!this.targetNumber && isLineBreak) this.targetNumber = index
+
+    const blockCon = new Hilo.Container({
+      id: { realId: index, questionId: item.id },
+      x: (this.rect[2] + 5) * (index - this.targetNumber),
+      y: isLineBreak ? this.rect[3] + 20 : 0,
+    }).addTo(target)
+
     new Hilo.Bitmap({
       id: { realId: index, questionId: item.id },
-      x: (this.rect[2] + 20) * (index - this.targetNumber),
-      y: isLineBreak ? this.rect[3] + 40 : 0,
       image,
       rect: this.rect,
       visible: true,
       scaleX: 1,
       scaleY: 1,
-    }).addTo(target)
+      alpha: textVisible ? 0.9 : 1
+    }).addTo(blockCon)
 
     if (textVisible) {
       new Text({
@@ -92,12 +98,48 @@ export default class ResultPanel extends Hilo.Container {
         alpha: 1,
         reTextWidth: this.rect[2],
         height: this.rect[3] - 27,
-        x: (this.rect[2] + 20) * (index - this.targetNumber),
-        y: isLineBreak ? this.rect[3] + 67 : 27,
+        x: 0,
+        y: 27,
         color: '#fff',
-      }).addTo(target)
+      }).addTo(blockCon)
+
+      this.drag(blockCon)
     }
   }
+  drag (blockCon) {
+    Hilo.util.copy(blockCon, Hilo.drag)
+    blockCon.startDrag([-220, -660, 1920, 1080])
 
+    let targetEvent = null
+
+    blockCon.on("dragStart", (e) => {
+      this.statPosition = {
+        x: e.target.x,
+        y: e.target.y
+      }
+      e.target.getChildAt(0).alpha = 1
+      targetEvent = e
+    })
+
+    const that = this
+
+    blockCon.on("dragEnd", (event) => {
+      const isSelected = true
+      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).x : this.statPosition.x
+      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).y - 340 : this.statPosition.y
+      Hilo.Tween.to(
+        blockCon,
+        { x, y },
+        {
+          duration: 200,
+          onComplete () {
+            console.log(targetEvent.target.getChildAt(0).image)
+            targetEvent.target.getChildAt(0).alpha = .9
+            targetEvent.target.getChildAt(0).image = that.fillIcon
+          }
+        }
+      )
+    })
+  }
 }
 
