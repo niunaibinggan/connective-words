@@ -71,10 +71,13 @@ export default class ResultPanel extends Hilo.Container {
 
     if (!this.targetNumber && isLineBreak) this.targetNumber = index
 
+    const initX = (this.rect[2] + 5) * (index - this.targetNumber)
+    const initY = isLineBreak ? this.rect[3] + 20 : 0
+
     const blockCon = new Hilo.Container({
       id: { realId: index, questionId: item.id },
-      x: (this.rect[2] + 5) * (index - this.targetNumber),
-      y: isLineBreak ? this.rect[3] + 20 : 0,
+      x: initX,
+      y: initY,
     }).addTo(target)
 
     // new Hilo.Bitmap({
@@ -135,6 +138,13 @@ export default class ResultPanel extends Hilo.Container {
     const that = this
 
     blockCon.on("dragEnd", (event) => {
+      const endX = event.detail.x - 71
+      let current = Math.round(endX / (this.rect[2] + 5) - 1)
+      if (current <= -1) current = Math.ceil(endX / (this.rect[2] + 5) - 1)
+      console.log(event.detail.x)
+      console.log(current)
+      console.log(this.temporaryQuestionsContainer.getChildAt(0))
+      console.log((this.rect[2] + 5) * 2)
       const isSelected = true
       const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).x : this.statPosition.x
       const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).y - 340 : this.statPosition.y
