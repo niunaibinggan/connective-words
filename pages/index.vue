@@ -10,7 +10,7 @@
   import StageFectory from '~/components/game/stage'
   import ExportScence from '~/components/game/exportScence'
   import SubmitButton from '~/components/game/submitButton'
-  // import Panel from '~/components/game/panel'
+  import Panel from '~/components/game/panel'
   import ResultModel from '~/components/game/resultModel'
   import ResetButton from '~/components/game/resetButton'
   export default {
@@ -33,7 +33,6 @@
           // title: '连线游戏'
         },
         answerQuestionsIds: [],
-        answerRealIds: [],
         isAllRight: false,
         questionsPanelCanvas: null,
         questionsResetCanvas: null,
@@ -84,7 +83,7 @@
       // 插入背景
       this.stage.addChild(exportScence)
 
-      // this.questionsPanelCanvas = this.createPanel('panel')
+      this.questionsPanelCanvas = this.createPanel('panel')
 
       this.questionsSubmitCanvas = this.createSubmitButton()
 
@@ -112,21 +111,17 @@
         oContainer.insertBefore(oBgWarpper, this.stage.canvas);
       },
       createPanel (type = 'panel') {
-        const { questionLeft, questionRight, errorLine, rightLine, questionsImage, errorIcon, tipsLine } = this.assets
+        const { fillIcon, chooseIcon, bgIcon, errorIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
         const panel = new Panel({
-          // x: (1920 - 499 * 2 - 300) / 2,
-          // y: 320 - (this.questions.left.length * 10),
           x: 0,
           y: 0,
-          images: { questionLeft, questionRight, errorLine, rightLine, questionsImage, errorIcon, tipsLine },
-          questions: this.questions,
+          images: { fillIcon, chooseIcon, bgIcon, errorIcon },
+          questions: this.questions.content,
           alpha: this.setAlpha,
           answerQuestionsIds: this.answerQuestionsIds,
-          answerRealIds: this.answerRealIds,
-          resultIds: this.resultIds,
           type,
-          stage: this.stage
+          stage: this.stage,
         })
         this.stage.addChild(panel)
         return panel
@@ -145,8 +140,6 @@
         subBtn.on(Hilo.event.POINTER_START, (e) => {
 
           // this.answerQuestionsIds = this.questionsPanelCanvas.setAnswerQuestionsId
-
-          // this.answerRealIds = this.questionsPanelCanvas.setAnswer
 
           // if (this.answerQuestionsIds.length !== this.questions.left.length) return
 
@@ -225,7 +218,6 @@
         // 重置基础信息
         this.shuffle(this.questions.content)
         this.answerQuestionsIds = []
-        this.answerRealIds = []
 
         // 重置后创建
         this.questionsPanelCanvas = this.createPanel('panel')
