@@ -38,6 +38,7 @@
         questionsResetCanvas: null,
         questionsSubmitCanvas: null,
         setAlpha: 1,
+        answerError: []
       }
     },
     async mounted () {
@@ -81,8 +82,9 @@
       // this.stage.addChild(exportScence)
 
       this.questionsPanelCanvas = this.createPanel('panel')
+      // this.questionsPanelCanvas = this.createPanel('result')
 
-      // this.questionsSubmitCanvas = this.createSubmitButton()
+      this.questionsSubmitCanvas = this.createSubmitButton()
 
     },
     methods: {
@@ -92,12 +94,13 @@
         const panel = new Panel({
           x: 0,
           y: 0,
-          images: { errorIcon },
+          errorIcon,
           questions: this.questions.content,
           alpha: this.setAlpha,
-          answerQuestionsIds: this.answerQuestionsIds,
+          answerError: this.answerError,
           type,
           stage: this.stage,
+          answerError: this.answerError
         })
         this.stage.addChild(panel)
         return panel
@@ -115,17 +118,17 @@
 
         subBtn.on(Hilo.event.POINTER_START, (e) => {
 
-          // this.answerQuestionsIds = this.questionsPanelCanvas.setAnswerQuestionsId
+          if (!this.questionsPanelCanvas.setAnswer.every(item => item)) return
 
-          // if (this.answerQuestionsIds.length !== this.questions.left.length) return
+          this.answerError = this.questionsPanelCanvas.setAnswer.filter((item, index) => item.questionId !== this.questions.content[index].id)
+
+          this.isAllRight = !this.answerError.length
 
           // 移除作答模版
-          // this.stage.removeChild(this.questionsPanelCanvas)
+          this.stage.removeChild(this.questionsPanelCanvas)
 
           // 创建显示模版
-          // this.questionsPanelCanvas = this.createPanel('result')
-
-          // this.isAllRight = this.answerQuestionsIds.every(item => item[0] == item[1])
+          this.questionsPanelCanvas = this.createPanel('result')
 
           this.createModel(subBtn)
         })
