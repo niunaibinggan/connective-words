@@ -68,9 +68,6 @@
 
       const { bg, titleBg } = this.assets
 
-      // 初始化背景
-      this.initBackground()
-
       // 准备场景
       const exportScence = new ExportScence({
         x: 0,
@@ -81,35 +78,14 @@
       })
 
       // 插入背景
-      this.stage.addChild(exportScence)
+      // this.stage.addChild(exportScence)
 
       this.questionsPanelCanvas = this.createPanel('panel')
 
-      this.questionsSubmitCanvas = this.createSubmitButton()
+      // this.questionsSubmitCanvas = this.createSubmitButton()
 
     },
     methods: {
-      initBackground () {
-
-        const oCanvas = document.querySelector('canvas')
-
-        const oContainer = document.querySelector('.container')
-
-        const { width: bgWidth, height: bgHeight } = oCanvas.getBoundingClientRect()
-
-        const oBgWarpper = Hilo.createElement('div', {
-          id: 'bg',
-          style: {
-            background: `url(${require('~/static/bg.png')}) no-repeat`,
-            backgroundSize: bgWidth + 'px, ' + bgHeight + 'px',
-            position: 'absolute',
-            width: bgWidth + 'px',
-            height: bgHeight + 'px'
-          }
-        })
-
-        oContainer.insertBefore(oBgWarpper, this.stage.canvas);
-      },
       createPanel (type = 'panel') {
         const { errorIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
@@ -228,12 +204,12 @@
       },
 
       shuffle (arr) {
-        for (var i = arr.length - 1; i >= 0; i--) {
-          var randomIndex = Math.floor(Math.random() * (i + 1));
-          var itemAtIndex = arr[randomIndex];
-          arr[randomIndex] = arr[i];
-          arr[i] = itemAtIndex;
-        }
+        // for (var i = arr.length - 1; i >= 0; i--) {
+        //   var randomIndex = Math.floor(Math.random() * (i + 1));
+        //   var itemAtIndex = arr[randomIndex];
+        //   arr[randomIndex] = arr[i];
+        //   arr[i] = itemAtIndex;
+        // }
         this.questions.content = arr
       },
     }

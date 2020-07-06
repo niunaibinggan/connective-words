@@ -3,7 +3,13 @@ import Text from './text'
 export default class ResultPanel extends Hilo.Container {
   constructor(properties) {
     super(properties)
+
     this.stage = properties.stage
+
+    this.questions = properties.questions
+
+    // 生成答题数组
+    this.setAnswer = Array.apply(null, { length: properties.questions.length })
 
     this.creatContainer()
 
@@ -22,30 +28,19 @@ export default class ResultPanel extends Hilo.Container {
     // this.resutlLine(properties)
 
   }
-  // selected = []
-  // isText = false
-  // rightX = 800
-  // distance = null
+  questions = []
   setAnswerQuestionsId = []
   rect = [0, 0, 200, 86]
   targetNumber = 0
-  statPosition = {}
+  startPosition = {}
   bgIcon = require('~/static/bg_button.png')
   chooseIcon = require('~/static/choose_button.png')
   fillIcon = require('~/static/button.png')
-  // setAnswer = []
-  // resultIds = []
-  // rotationDeg = 0
-  // lineX = null
-  // lineBase = null
-  // errorIcon = null
-  // repeatAnswerIndex = []
-  // readyLine = {
-  //   isStart: false
-  // }
   stage = null
   temporaryQuestionsContainer = null
   temporarySelectedContainer = null
+
+  setAnswer = []
 
 
   creatContainer () {
@@ -65,6 +60,7 @@ export default class ResultPanel extends Hilo.Container {
       this.commonBlock(this.temporaryQuestionsContainer, this.bgIcon, item, index, false)
       this.commonBlock(this.temporarySelectedContainer, this.chooseIcon, item, index, true)
     })
+    console.log(this.setAnswer.length)
   }
   commonBlock (target, image, item, index, textVisible) {
     const isLineBreak = (1920 - 220 * 2) - (this.rect[2] + 5) * index < 220
@@ -124,37 +120,40 @@ export default class ResultPanel extends Hilo.Container {
     let targetEvent = null
 
     blockCon.on("dragStart", (e) => {
-      this.statPosition = {
+      this.startPosition = {
         x: e.target.x,
         y: e.target.y
       }
-
-      this.onloadImage(this.chooseIcon, e.target.getChildAt(0), this)
-
       e.target.getChildAt(0).alpha = 1
       targetEvent = e
+    })
+
+    blockCon.on("dragMove", (e) => {
+      this.onloadImage(this.chooseIcon, e.target.getChildAt(0), this)
+      e.target.getChildAt(0).alpha = 1
     })
 
     const that = this
 
     blockCon.on("dragEnd", (event) => {
-      const endX = event.detail.x - 71
-      let current = Math.round(endX / (this.rect[2] + 5) - 1)
-      if (current <= -1) current = Math.ceil(endX / (this.rect[2] + 5) - 1)
-      console.log(event.detail.x)
-      console.log(current)
-      console.log(this.temporaryQuestionsContainer.getChildAt(0))
-      console.log((this.rect[2] + 5) * 2)
-      const isSelected = true
-      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).x : this.statPosition.x
-      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(0).y - 340 : this.statPosition.y
+      const currentTarget = this.findBlockIndex(event.target.x, event.target.y)
+
+      const isSelected = currentTarget !== -1
+
+      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).x : this.startPosition.x
+      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340 : this.startPosition.y
       Hilo.Tween.to(
         blockCon,
         { x, y },
         {
-          duration: 200,
+          duration: 100,
           onComplete () {
-            that.onloadImage(that.fillIcon, targetEvent.target.getChildAt(0), that)
+            if (isSelected) {
+              that.onloadImage(that.fillIcon, targetEvent.target.getChildAt(0), that)
+              that.setAnswer[currentTarget] = targetEvent.target.id.questionId
+
+              console.log(that.setAnswer)
+            }
             targetEvent.target.getChildAt(0).alpha = .9
           }
         }
@@ -167,9 +166,49 @@ export default class ResultPanel extends Hilo.Container {
     img.src = image
     img.onload = () => {
       img.onload = null
-      const pattern = _this.stage.renderer.context.createPattern(img, 'no-repeat');
-      target.background = pattern;
+      const pattern = _this.stage.renderer.context.createPattern(img, 'no-repeat')
+      target.background = pattern
     }
+  }
+
+  findBlockIndex (dragX, dragY) {
+    const distanceFlagX = 205
+    const distanceFlagY = 86
+
+    // 获取所有 block 的位置
+    const arr = this.temporarySelectedContainer.children.map((item, index) => {
+      return {
+        x: index < this.targetNumber ? index * distanceFlagX : (index - this.targetNumber) * distanceFlagX,
+        y: index < this.targetNumber ? -340 : -340 + distanceFlagY
+      }
+    })
+    // 过滤出相近的 block 的位置
+    const filterArr = arr.filter((item, index) => {
+      if ((item.x > dragX - distanceFlagX) && (item.x < dragX + distanceFlagX)
+        && (item.y > dragY - distanceFlagY) && (item.y < dragY + distanceFlagY)) {
+        item.index = index
+        item.distanceX = Math.round(Math.abs(item.x - dragX))
+        item.distanceY = Math.round(Math.abs(item.y - dragY))
+        return item
+      }
+    })
+
+    if (!filterArr.length) return -1
+
+    let MaxDistance = null
+
+    if (filterArr.length == 2) {
+
+      if (filterArr[0].distanceX === filterArr[1].distanceX) MaxDistance = Math.min(...filterArr.map(item => item.distanceY))
+
+      else MaxDistance = Math.min(...filterArr.map(item => item.distanceX))
+
+    } else {
+      MaxDistance = Math.min(...filterArr.map(item => item.distanceX).concat(filterArr.map(item => item.distanceY)))
+    }
+
+    return filterArr[filterArr.findIndex(item => (item.distanceX === MaxDistance || item.distanceY === MaxDistance))].index
+
   }
 }
 
