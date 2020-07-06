@@ -85,10 +85,13 @@
         this.questions.content.push({ id: createId, text: '' })
       },
       defalutConfig () {
-        this.questions.content = [
-          { id: 0, text: '我是' },
-          { id: 1, text: '学生' },
-        ]
+        this.questions = {
+          content: [
+            { id: 0, text: '我是' },
+            { id: 1, text: '学生' },
+          ],
+          title: '连词成句'
+        }
       },
       async submitConfig () {
         const leftVerify = this.questions.content.every(item => item.text)
@@ -110,7 +113,8 @@
         let setQuestion = this.questions
 
         try {
-          await this.$testsave(null, JSON.stringify(setQuestion))
+          const thumbnail = await save(setQuestion)
+          await this.$testsave(thumbnail, JSON.stringify(setQuestion))
         } catch (error) {
           localStorage.setItem('questionsConfig', JSON.stringify(setQuestion))
         }

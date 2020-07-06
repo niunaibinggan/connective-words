@@ -56,7 +56,7 @@
       this.shuffle(this.questions.content)
 
       // 预加载图片
-      const Assets = AssetsFectory(this.questions)
+      const Assets = AssetsFectory()
       this.assets = new Assets()
       await this.assets.load()
 
@@ -178,7 +178,7 @@
           this.questionsSubmitCanvas.visible = false
           this.stage.removeChild(resultModel)
           // this.questionsResetCanvas.visible = true
-        }, 3000)
+        }, 2000)
         return resultModel
       },
       createRestButtons () {

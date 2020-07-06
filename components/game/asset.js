@@ -1,8 +1,6 @@
 import Hilo from 'hilojs'
 
-export default function (data) {
-
-  const isTest = (data.type === 'text')
+export default function () {
 
   return Hilo.Class.create({
     Mixes: Hilo.EventMixin,
