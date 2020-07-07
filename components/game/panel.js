@@ -13,6 +13,7 @@ export default class ResultPanel extends Hilo.Container {
 
     this.answerError = properties.answerError
 
+    // properties.type  'panel' |'resutl' 两种种类型
     this.panelType = properties.type
 
     this.errorIcon = properties.errorIcon
@@ -21,24 +22,10 @@ export default class ResultPanel extends Hilo.Container {
 
     this.initBlock(properties)
 
-
-
-    // this.setAnswer = properties.answerRealIds
-
-    // this.resultIds = properties.resultIds
-
-    // this.errorIcon = properties.images.errorIcon
-
-    // properties.type  'panel' |'resutl' | 'rightResult' 三种类型
-    if (properties.type === 'panel') return
-    // this.resutlLine(properties)
-
   }
   questions = []
   answerError = []
   rect = [0, 0, 200, 86]
-  targetNumber = 0
-  startPosition = {}
   bgIcon = require('~/static/bg_button.png')
   chooseIcon = require('~/static/choose_button.png')
   fillIcon = require('~/static/button.png')
@@ -93,7 +80,8 @@ export default class ResultPanel extends Hilo.Container {
         index,
         type: this.panelType,
         textVisible: this.panelType !== 'panel',
-        offsetValue: this.questionsOffsetValue
+        offsetValue: this.questionsOffsetValue,
+        isAllow: false
       })
 
       if (this.panelType === 'panel') {
@@ -112,7 +100,8 @@ export default class ResultPanel extends Hilo.Container {
           index,
           type: this.panelType,
           textVisible: this.panelType === 'panel',
-          offsetValue: this.selectedOffsetValue
+          offsetValue: this.selectedOffsetValue,
+          isAllow: true
         })
       }
     })
@@ -127,7 +116,7 @@ export default class ResultPanel extends Hilo.Container {
 
     if (data.textVisible) this.creatText(blockCon, data.text, id)
 
-    if (data.type === 'panel') this.drag(blockCon)
+    if (data.type === 'panel' && data.isAllow) this.drag(blockCon)
   }
   drag (blockCon) {
     Hilo.util.copy(blockCon, Hilo.drag)
@@ -136,10 +125,6 @@ export default class ResultPanel extends Hilo.Container {
     let targetEvent = null
 
     blockCon.on("dragStart", (e) => {
-      this.startPosition = {
-        x: e.target.x,
-        y: e.target.y
-      }
       e.target.getChildAt(0).alpha = 1
       targetEvent = e
     })
@@ -152,17 +137,21 @@ export default class ResultPanel extends Hilo.Container {
 
       this.includeArr = this.findBlockIndex(event.target.x, event.target.y, 'arr')
 
-      this.includeArr.forEach(item => {
-        if (this.setAnswer[item]) this.temporarySelectedContainer.getChildAt(this.setAnswer[item].realId).alpha = 0
-      })
+      // this.setAnswer.forEach(item => {
+      //   if (item) {
+      //     this.temporarySelectedContainer.getChildAt(item.realId).alpha = this.includeArr.includes(item.realId) ? 0 : 1
+      //   }
+      // })
     })
 
     const that = this
 
     blockCon.on("dragEnd", (event) => {
-      this.includeArr = []
-      this.temporarySelectedContainer.children.map(item => item.alpha = 1)
+      // this.includeArr = []
+      // this.temporarySelectedContainer.children.map(item => item.alpha = 1)
       const currentTarget = this.findBlockIndex(event.target.x, event.target.y, 'index')
+
+      console.log(currentTarget)
 
       const isSelected = currentTarget !== -1
 
@@ -172,9 +161,20 @@ export default class ResultPanel extends Hilo.Container {
         index: id,
         base: this.selectedDistanceBase
       })
+      let x = start.x
+      let y = start.y
 
-      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).x : start.x
-      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340 : start.y
+      if (isSelected) {
+        x = this.temporaryQuestionsContainer.getChildAt(currentTarget).x
+        y = this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340
+
+        const a = this.getSelectedOffsetValue({
+          index: currentTarget,
+          base: this.questionDistanceBase
+        })
+      } else {
+        this.setAnswer[id] = undefined
+      }
       Hilo.Tween.to(
         blockCon,
         { x, y },
@@ -184,6 +184,7 @@ export default class ResultPanel extends Hilo.Container {
             if (isSelected) {
               // 更换 button 背景
               that.onloadImage(that.fillIcon, targetEvent.target.getChildAt(0), that)
+
               if (that.setAnswer[currentTarget]) {
                 const id = that.setAnswer[currentTarget].realId
 
@@ -191,12 +192,11 @@ export default class ResultPanel extends Hilo.Container {
                   index: id,
                   base: that.selectedDistanceBase
                 })
-
                 that.temporarySelectedContainer.getChildAt(id).x = start.x
                 that.temporarySelectedContainer.getChildAt(id).y = start.y
-
                 that.onloadImage(that.chooseIcon, that.temporarySelectedContainer.getChildAt(id).getChildAt(0), that)
               }
+
               that.setAnswer[currentTarget] = {
                 questionId: targetEvent.target.id.questionId,
                 realId: targetEvent.target.id.realId
@@ -227,9 +227,10 @@ export default class ResultPanel extends Hilo.Container {
     const arr = this.temporarySelectedContainer.children.map((item, index) => {
       return {
         x: index < this.questionTargetNumber ? index * distanceFlagX : (index - this.questionTargetNumber) * distanceFlagX,
-        y: index < this.questionTargetNumber ? -340 : -340 + distanceFlagY
+        y: !this.questionTargetNumber || index < this.questionTargetNumber ? -340 : -340 + distanceFlagY,
       }
     })
+
     // 过滤出相近的 block 的位置
     const filterArr = arr.filter((item, index) => {
       if ((item.x > dragX - distanceFlagX) && (item.x < dragX + distanceFlagX)
@@ -244,11 +245,11 @@ export default class ResultPanel extends Hilo.Container {
     if (!filterArr.length) return type === 'arr' ? [] : -1
 
     if (type === 'arr') {
-      this.temporarySelectedContainer.children.map(item => item.alpha = .9)
       return filterArr.map(item => item && item.index)
     }
 
     let MaxDistance = null
+
 
     if (filterArr.length === 2) {
 
@@ -280,9 +281,9 @@ export default class ResultPanel extends Hilo.Container {
   }
 
   getSelectedOffsetValue (data) {
-    const current = data.index > this.selectedTargetNumber ? data.index - this.selectedTargetNumber : data.index
+    const current = this.selectedTargetNumber && (data.index > this.selectedTargetNumber) ? data.index - this.selectedTargetNumber : data.index
     const initX = (this.rect[2] + data.base) * current
-    const initY = data.index > this.selectedTargetNumber ? this.rect[3] + 20 : 0
+    const initY = this.selectedTargetNumber && (data.index > this.selectedTargetNumber) ? this.rect[3] + 20 : 0
 
     return { x: initX, y: initY }
   }

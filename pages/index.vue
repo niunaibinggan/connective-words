@@ -169,8 +169,6 @@
 
         resetButtons.on(Hilo.event.POINTER_START, (e) => {
 
-          this.questionsPanelCanvas = null
-
           if (this.isAllRight) return this.resetHandel()
 
           e.eventTarget.id ? this.resetHandel() : this.seachHanel()
@@ -198,7 +196,6 @@
 
         // 重置后创建
         this.questionsPanelCanvas = this.createPanel('panel')
-
 
       },
       seachHanel () {
