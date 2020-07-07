@@ -13,32 +13,22 @@
   import Panel from '~/components/game/panel'
   import ResultModel from '~/components/game/resultModel'
   import ResetButton from '~/components/game/resetButton'
+  import Text from '~/components/game/text'
   export default {
     data () {
       return {
         gameMain: null,
         stage: null,
         assets: null,
-        questions: {
-          // left: [
-          //   { id: 1, text: 9 + 8 },
-          //   { id: 2, text: 1 + 8 },
-          //   { id: 3, text: 1 + 8 + 9 },
-          // ],
-          // right: [
-          //   { id: 1, text: 9 + 8 },
-          //   { id: 2, text: 1 + 8 },
-          //   { id: 3, text: 1 + 8 + 9 }
-          // ],
-          // title: '连线游戏'
-        },
-        answerQuestionsIds: [],
+        questions: {},
         isAllRight: false,
         questionsPanelCanvas: null,
         questionsResetCanvas: null,
         questionsSubmitCanvas: null,
+        resultCanvas: null,
         setAlpha: 1,
-        answerError: []
+        answerError: [],
+        setAnswer: []
       }
     },
     async mounted () {
@@ -82,9 +72,10 @@
       // this.stage.addChild(exportScence)
 
       this.questionsPanelCanvas = this.createPanel('panel')
-      // this.questionsPanelCanvas = this.createPanel('result')
 
       this.questionsSubmitCanvas = this.createSubmitButton()
+
+      this.resultCanvas = this.createResult()
 
     },
     methods: {
@@ -100,7 +91,8 @@
           answerError: this.answerError,
           type,
           stage: this.stage,
-          answerError: this.answerError
+          answerError: this.answerError,
+          setAnswer: this.setAnswer
         })
         this.stage.addChild(panel)
         return panel
@@ -120,7 +112,9 @@
 
           if (!this.questionsPanelCanvas.setAnswer.every(item => item)) return
 
-          this.answerError = this.questionsPanelCanvas.setAnswer.filter((item, index) => item.questionId !== this.questions.content[index].id)
+          this.setAnswer = this.questionsPanelCanvas.setAnswer
+
+          this.answerError = this.questionsPanelCanvas.setAnswer.filter((item, index) => item.questionId !== index)
 
           this.isAllRight = !this.answerError.length
 
@@ -156,7 +150,6 @@
           this.questionsResetCanvas = this.createRestButtons()
           this.questionsSubmitCanvas.visible = false
           this.stage.removeChild(resultModel)
-          // this.questionsResetCanvas.visible = true
         }, 2000)
         return resultModel
       },
@@ -176,8 +169,6 @@
 
         resetButtons.on(Hilo.event.POINTER_START, (e) => {
 
-          // 移除显示结果panel
-          this.stage.removeChild(this.questionsPanelCanvas)
           this.questionsPanelCanvas = null
 
           if (this.isAllRight) return this.resetHandel()
@@ -190,29 +181,61 @@
         return resetButtons
       },
       resetHandel () {
+        this.resultCanvas.visible = false
+
+        // 移除显示结果panel
+        this.stage.removeChild(this.questionsPanelCanvas)
+
         this.questionsResetCanvas.visible = false
 
         this.questionsSubmitCanvas.visible = true
 
         // 重置基础信息
+        this.setAnswer = []
+        this.answerError = []
+
         this.shuffle(this.questions.content)
-        this.answerQuestionsIds = []
 
         // 重置后创建
         this.questionsPanelCanvas = this.createPanel('panel')
 
+
       },
       seachHanel () {
-        this.questionsPanelCanvas = this.createPanel('rightResult')
+        this.resultCanvas.visible = true
       },
+      createResult () {
+        const result = new Hilo.Container({
+          x: 220,
+          y: this.questions.content.length > 7 ? 520 : 440,
+          width: 1920 - 220 * 2,
+          height: 200,
+          visible: false,
+        })
 
+        new Text({
+          text: `正确答案：${this.questions.result}`,
+          fontSize: 30,
+          bold: true,
+          visible: true,
+          alpha: 1,
+          reTextWidth: 1920 - 220 * 2,
+          height: 60,
+          x: 0,
+          y: 27,
+          color: '#ff4f4f',
+          letterSpacing: 10,
+        }).addTo(result)
+        this.stage.addChild(result)
+        return result
+      },
       shuffle (arr) {
-        // for (var i = arr.length - 1; i >= 0; i--) {
-        //   var randomIndex = Math.floor(Math.random() * (i + 1));
-        //   var itemAtIndex = arr[randomIndex];
-        //   arr[randomIndex] = arr[i];
-        //   arr[i] = itemAtIndex;
-        // }
+        for (var i = arr.length - 1; i >= 0; i--) {
+          var randomIndex = Math.floor(Math.random() * (i + 1));
+          var itemAtIndex = arr[randomIndex];
+          arr[randomIndex] = arr[i];
+          arr[i] = itemAtIndex;
+        }
         this.questions.content = arr
       },
     }

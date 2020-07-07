@@ -8,8 +8,8 @@ export default class ResultPanel extends Hilo.Container {
 
     this.questions = properties.questions
 
-    // 生成答题数组
-    this.setAnswer = Array.apply(null, { length: properties.questions.length })
+    if (properties.type === 'panel') this.setAnswer = Array.apply(null, { length: properties.questions.length })
+    else this.setAnswer = properties.setAnswer
 
     this.answerError = properties.answerError
 
@@ -50,6 +50,12 @@ export default class ResultPanel extends Hilo.Container {
   setAnswer = []
   includeArr = []
   panelType = ''
+  questionDistanceBase = 5
+  selectedDistanceBase = 110
+  questionTargetNumber = 0
+  selectedTargetNumber = 0
+  questionsOffsetValue = {}
+  selectedOffsetValue = {}
 
 
   creatContainer () {
@@ -66,69 +72,62 @@ export default class ResultPanel extends Hilo.Container {
 
   initBlock (properties) {
     properties.questions.forEach((item, index) => {
+
+      this.questionsOffsetValue = this.getOffsetValue({
+        type: 'questions',
+        index,
+        base: this.questionDistanceBase
+      })
+
+      let answerText
+      if (this.panelType === 'result') {
+        answerText = properties.questions.filter(item => this.setAnswer[index].questionId === item.id)[0].text
+      }
+
+
+      this.commonBlock({
+        target: this.temporaryQuestionsContainer,
+        image: this.panelType === 'panel' ? this.bgIcon : this.fillIcon,
+        id: this.panelType === 'result' ? this.setAnswer[index].questionId : item.id,
+        text: this.panelType === 'result' ? answerText : item.text,
+        index,
+        type: this.panelType,
+        textVisible: this.panelType !== 'panel',
+        offsetValue: this.questionsOffsetValue
+      })
+
       if (this.panelType === 'panel') {
-        this.commonBlock(this.temporaryQuestionsContainer, this.bgIcon, item, index, false)
-        this.commonBlock(this.temporarySelectedContainer, this.chooseIcon, item, index, true)
-      } else {
-        this.commonBlock(this.temporaryQuestionsContainer, this.fillIcon, item, index, true)
+
+        this.selectedOffsetValue = this.getOffsetValue({
+          type: 'selected',
+          index,
+          base: this.selectedDistanceBase
+        })
+
+        this.commonBlock({
+          target: this.temporarySelectedContainer,
+          image: this.chooseIcon,
+          id: item.id,
+          text: item.text,
+          index,
+          type: this.panelType,
+          textVisible: this.panelType === 'panel',
+          offsetValue: this.selectedOffsetValue
+        })
       }
     })
   }
-  commonBlock (target, image, item, index, textVisible) {
-    const isLineBreak = (1920 - 220 * 2) - (this.rect[2] + 5) * index < 220
+  commonBlock (data) {
 
-    if (!this.targetNumber && isLineBreak) this.targetNumber = index
+    const id = { realId: data.index, questionId: data.id }
 
-    const initX = (this.rect[2] + 5) * (index - this.targetNumber)
-    const initY = isLineBreak ? this.rect[3] + 20 : 0
+    const blockCon = this.creatBlockContainer(data.target, data.image, id, data.offsetValue.x, data.offsetValue.y)
 
-    const blockCon = new Hilo.Container({
-      id: { realId: index, questionId: item.id },
-      x: initX,
-      y: initY,
-    }).addTo(target)
+    if (data.type === 'result') this.creatError(blockCon, data.index)
 
-    const creatView = new Hilo.View({
-      id: { realId: index, questionId: item.id },
-      width: this.rect[2],
-      height: this.rect[3]
-    }).addTo(blockCon)
+    if (data.textVisible) this.creatText(blockCon, data.text, id)
 
-    this.onloadImage(image, creatView, this)
-
-    if (this.panelType === 'result') {
-      console.log(this.answerError)
-      new Hilo.Bitmap({
-        image: this.errorIcon,
-        rect: [0, 0, 44, 44],
-        visible: true,
-        scaleX: 1,
-        scaleY: 1,
-        x: 162,
-        y: 56,
-        alpha: this.answerError.filter(item => item.realId === index).length ? 1 : 0
-      }).addTo(blockCon)
-    }
-
-    if (textVisible) {
-      new Text({
-        id: { realId: index, questionId: item.id },
-        text: item.text,
-        fontSize: 34,
-        bold: true,
-        textAlign: 'center',
-        visible: true,
-        alpha: 1,
-        reTextWidth: this.rect[2],
-        height: this.rect[3] - 27,
-        x: 0,
-        y: 27,
-        color: '#fff',
-      }).addTo(blockCon)
-
-      if (this.panelType === 'panel') this.drag(blockCon)
-
-    }
+    if (data.type === 'panel') this.drag(blockCon)
   }
   drag (blockCon) {
     Hilo.util.copy(blockCon, Hilo.drag)
@@ -146,25 +145,21 @@ export default class ResultPanel extends Hilo.Container {
     })
 
     blockCon.on("dragMove", (event) => {
+
       this.onloadImage(this.chooseIcon, event.target.getChildAt(0), this)
+
       event.target.getChildAt(0).alpha = 1
 
       this.includeArr = this.findBlockIndex(event.target.x, event.target.y, 'arr')
 
-      // if (!includeArr.length) return
-      // includeArr.forEach(item => {
-      //   if (this.setAnswer[item]) {
-      //     this.temporarySelectedContainer.getChildAt(this.setAnswer[item].realId).alpha = 0
-      //   } else {
-      //     this.temporarySelectedContainer.children.map(item => item.alpha = 1)
-      //   }
-      // })
+      this.includeArr.forEach(item => {
+        if (this.setAnswer[item]) this.temporarySelectedContainer.getChildAt(this.setAnswer[item].realId).alpha = 0
+      })
     })
 
     const that = this
 
     blockCon.on("dragEnd", (event) => {
-      console.log(event)
       this.includeArr = []
       this.temporarySelectedContainer.children.map(item => item.alpha = 1)
       const currentTarget = this.findBlockIndex(event.target.x, event.target.y, 'index')
@@ -173,16 +168,13 @@ export default class ResultPanel extends Hilo.Container {
 
       const id = event.target.id.realId
 
-      const initX = id - this.targetNumber ? (this.rect[2] + 5) * id : (this.rect[2] + 5) * (this.targetNumber - id)
-      const initY = id - this.targetNumber ? 0 : this.rect[3] + 20
+      const start = this.getSelectedOffsetValue({
+        index: id,
+        base: this.selectedDistanceBase
+      })
 
-      this.startPosition = {
-        x: initX,
-        y: initY
-      }
-
-      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).x : this.startPosition.x
-      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340 : this.startPosition.y
+      const x = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).x : start.x
+      const y = isSelected ? this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340 : start.y
       Hilo.Tween.to(
         blockCon,
         { x, y },
@@ -195,11 +187,13 @@ export default class ResultPanel extends Hilo.Container {
               if (that.setAnswer[currentTarget]) {
                 const id = that.setAnswer[currentTarget].realId
 
-                const baseX = that.setAnswer[currentTarget].realId - that.targetNumber ? id : that.targetNumber - id
-                const baseY = that.setAnswer[currentTarget].realId - that.targetNumber ? 0 : 20 + that.rect[3]
+                const start = that.getSelectedOffsetValue({
+                  index: id,
+                  base: that.selectedDistanceBase
+                })
 
-                that.temporarySelectedContainer.getChildAt(id).x = (that.rect[2] + 5) * baseX
-                that.temporarySelectedContainer.getChildAt(id).y = baseY
+                that.temporarySelectedContainer.getChildAt(id).x = start.x
+                that.temporarySelectedContainer.getChildAt(id).y = start.y
 
                 that.onloadImage(that.chooseIcon, that.temporarySelectedContainer.getChildAt(id).getChildAt(0), that)
               }
@@ -232,8 +226,8 @@ export default class ResultPanel extends Hilo.Container {
     // 获取所有 block 的位置
     const arr = this.temporarySelectedContainer.children.map((item, index) => {
       return {
-        x: index < this.targetNumber ? index * distanceFlagX : (index - this.targetNumber) * distanceFlagX,
-        y: index < this.targetNumber ? -340 : -340 + distanceFlagY
+        x: index < this.questionTargetNumber ? index * distanceFlagX : (index - this.questionTargetNumber) * distanceFlagX,
+        y: index < this.questionTargetNumber ? -340 : -340 + distanceFlagY
       }
     })
     // 过滤出相近的 block 的位置
@@ -249,7 +243,10 @@ export default class ResultPanel extends Hilo.Container {
 
     if (!filterArr.length) return type === 'arr' ? [] : -1
 
-    if (type === 'arr') return filterArr.map(item => item && item.index)
+    if (type === 'arr') {
+      this.temporarySelectedContainer.children.map(item => item.alpha = .9)
+      return filterArr.map(item => item && item.index)
+    }
 
     let MaxDistance = null
 
@@ -265,5 +262,74 @@ export default class ResultPanel extends Hilo.Container {
 
     return filterArr[filterArr.findIndex(item => (item.distanceX === MaxDistance || item.distanceY === MaxDistance))].index
 
+  }
+
+  getOffsetValue (data) {
+    const isLineBreak = (1920 - 220 * 2) - (this.rect[2] + data.base) * data.index < 220
+
+    let targetNumber = data.type === 'questions' ? this.questionTargetNumber : this.selectedTargetNumber
+
+    if (!targetNumber && isLineBreak) data.type === 'questions' ? this.questionTargetNumber = data.index : this.selectedTargetNumber = data.index
+
+    const number = data.type === 'questions' ? this.questionTargetNumber : this.selectedTargetNumber
+
+    const initX = (this.rect[2] + data.base) * Math.abs(data.index - number)
+    const initY = isLineBreak ? this.rect[3] + 20 : 0
+
+    return { x: initX, y: initY }
+  }
+
+  getSelectedOffsetValue (data) {
+    const current = data.index > this.selectedTargetNumber ? data.index - this.selectedTargetNumber : data.index
+    const initX = (this.rect[2] + data.base) * current
+    const initY = data.index > this.selectedTargetNumber ? this.rect[3] + 20 : 0
+
+    return { x: initX, y: initY }
+  }
+
+  creatBlockContainer (target, image, id, x, y) {
+    const blockCon = new Hilo.Container({
+      id,
+      x,
+      y,
+    }).addTo(target)
+
+    const creatView = new Hilo.View({
+      id,
+      width: this.rect[2],
+      height: this.rect[3]
+    }).addTo(blockCon)
+
+    this.onloadImage(image, creatView, this)
+    return blockCon
+  }
+  creatText (blockCon, text, id) {
+    new Text({
+      id,
+      text,
+      fontSize: 34,
+      bold: true,
+      textAlign: 'center',
+      visible: true,
+      alpha: 1,
+      reTextWidth: this.rect[2],
+      height: this.rect[3] - 27,
+      x: 0,
+      y: 27,
+      color: '#fff',
+    }).addTo(blockCon)
+  }
+
+  creatError (blockCon, index) {
+    new Hilo.Bitmap({
+      image: this.errorIcon,
+      rect: [0, 0, 44, 44],
+      visible: true,
+      scaleX: 1,
+      scaleY: 1,
+      x: 162,
+      y: 56,
+      alpha: this.setAnswer[index].questionId !== index ? 1 : 0
+    }).addTo(blockCon)
   }
 }

@@ -22,6 +22,8 @@
                v-model="item.text"
                @focus="focusInput(index)"
                @blur="blurInput(index)">
+        <input type="text"
+               class="root__item-symbol">
       </li>
     </ul>
 
@@ -85,12 +87,17 @@
         this.questions.content.push({ id: createId, text: '' })
       },
       defalutConfig () {
+        let allInput = document.querySelectorAll('.root__question input')
+
+        allInput[allInput.length - 1].value = '。'
+
         this.questions = {
           content: [
             { id: 0, text: '我是' },
             { id: 1, text: '学生' },
           ],
-          title: '连词成句'
+          title: '连词成句',
+          result: '我是学生。'
         }
       },
       async submitConfig () {
@@ -110,10 +117,19 @@
           })
           return
         }
+
+        let allInput = document.querySelectorAll('.root__question input')
+
+        let result = ''
+        allInput.forEach((item, index) => {
+          result += item.value.trim()
+        })
         let setQuestion = this.questions
 
+        setQuestion.result = result
+
         try {
-          // const thumbnail = await save(setQuestion)
+          const thumbnail = await save(setQuestion)
           await this.$testsave(thumbnail, JSON.stringify(setQuestion))
         } catch (error) {
           localStorage.setItem('questionsConfig', JSON.stringify(setQuestion))
@@ -143,7 +159,7 @@
     padding: 5px 10px;
     cursor: pointer;
     border: 1px solid #ccc;
-    margin-right: 10px;
+    margin-right: 30px;
     margin-bottom: 10px;
     position: relative;
     height: 36px;
@@ -251,5 +267,15 @@
     border-radius: 4px;
     color: #5f6c65;
     cursor: pointer;
+  }
+
+  .root__item-symbol {
+    border: none;
+    width: 30px;
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    text-align: center;
+    background: none;
   }
 </style>
