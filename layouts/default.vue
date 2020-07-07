@@ -6,8 +6,7 @@
 
 <style>
   html {
-    font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Microsoft Yahei";
     font-size: 16px;
     word-spacing: 1px;
     -ms-text-size-adjust: 100%;
@@ -29,6 +28,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: "Microsoft Yahei";
   }
 
   input,
@@ -52,5 +52,20 @@
   select,
   textarea {
     outline: 0;
+  }
+
+  ::-webkit-input-placeholder {
+    color: #5f6c65;
+  }
+  :-moz-placeholder {
+    /* Firefox 18- */
+    color: #5f6c65;
+  }
+  ::-moz-placeholder {
+    /* Firefox 19+ */
+    color: #5f6c65;
+  }
+  :-ms-input-placeholder {
+    color: #5f6c65;
   }
 </style>

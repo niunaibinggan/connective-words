@@ -175,6 +175,7 @@
     text-align: center;
     border: none;
     background: none;
+    font-size: 14px;
   }
   .root__item-text {
     display: inline-block;
@@ -222,21 +223,22 @@
     width: 100%;
   }
   .root__title-set input {
+    color: #152c2c;
     border: none;
     border: 1px solid #cccccc;
-    font-size: 14px;
     margin-left: 5px;
     padding: 10px 10px;
     width: 20%;
+    font-size: 16px;
   }
 
   .root__default {
     float: right;
     padding: 8px 20px;
-    background: #7e827f;
+    background: #cccccc;
     font-size: 12px;
     border-radius: 4px;
-    color: #fff;
+    color: #5f6c65;
     cursor: pointer;
     margin-right: 20px;
   }
@@ -244,10 +246,10 @@
   .root__submit {
     float: right;
     padding: 8px 20px;
-    background: #39e698;
+    background: #0ed04b;
     font-size: 12px;
     border-radius: 4px;
-    color: #fff;
+    color: #5f6c65;
     cursor: pointer;
   }
 </style>
