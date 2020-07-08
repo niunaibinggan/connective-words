@@ -124,9 +124,15 @@ export default class ResultPanel extends Hilo.Container {
 
     let targetEvent = null
 
+    let startDragRealId
+
     blockCon.on("dragStart", (e) => {
+      this.includeArr = []
       e.target.getChildAt(0).alpha = 1
       targetEvent = e
+      console.log(e.target.id.realId)
+      startDragRealId = this.findeQuestionsIndex(e.target.id.questionId)
+      console.log(startDragRealId)
     })
 
     blockCon.on("dragMove", (event) => {
@@ -137,21 +143,31 @@ export default class ResultPanel extends Hilo.Container {
 
       this.includeArr = this.findBlockIndex(event.target.x, event.target.y, 'arr')
 
-      // this.setAnswer.forEach(item => {
-      //   if (item) {
-      //     this.temporarySelectedContainer.getChildAt(item.realId).alpha = this.includeArr.includes(item.realId) ? 0 : 1
-      //   }
-      // })
+      console.log(this.includeArr)
+
+      // if (this.includeArr.length) {
+      //   this.includeArr.forEach(item => {
+      //     if (this.setAnswer[item])
+      //     else this.temporarySelectedContainer.children.map(item => item.alpha = .9)
+      //   })
+      // }
+      // } else {
+
+
+      // }
+
+      // // console.log(this.includeArr)
+      this.setAnswer.forEach((item, index) => {
+
+        this.temporarySelectedContainer.getChildAt(item && item.realId).alpha = this.includeArr.includes(index) ? 0 : 1
+
+      })
     })
 
     const that = this
 
     blockCon.on("dragEnd", (event) => {
-      // this.includeArr = []
-      // this.temporarySelectedContainer.children.map(item => item.alpha = 1)
       const currentTarget = this.findBlockIndex(event.target.x, event.target.y, 'index')
-
-      console.log(currentTarget)
 
       const isSelected = currentTarget !== -1
 
@@ -163,43 +179,46 @@ export default class ResultPanel extends Hilo.Container {
       })
       let x = start.x
       let y = start.y
+      const selectedId = this.findeQuestionsIndex(event.target.id.questionId)
 
       if (isSelected) {
         x = this.temporaryQuestionsContainer.getChildAt(currentTarget).x
         y = this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340
-
-        const a = this.getSelectedOffsetValue({
-          index: currentTarget,
-          base: this.questionDistanceBase
-        })
-      } else {
-        this.setAnswer[id] = undefined
       }
+
+      if (!isSelected && selectedId !== -1) {
+        this.setAnswer[selectedId] = undefined
+      }
+
+      if (this.setAnswer[currentTarget] && currentTarget === this.setAnswer[currentTarget].moveId) {
+
+        const id = this.setAnswer[currentTarget].realId
+
+        const start = this.getSelectedOffsetValue({
+          index: id,
+          base: this.selectedDistanceBase
+        })
+
+        this.temporarySelectedContainer.getChildAt(id).x = start.x
+        this.temporarySelectedContainer.getChildAt(id).y = start.y
+
+        this.onloadImage(this.chooseIcon, this.temporarySelectedContainer.getChildAt(id).getChildAt(0), this)
+      }
+
       Hilo.Tween.to(
         blockCon,
         { x, y },
         {
-          duration: 100,
+          duration: 150,
           onComplete () {
             if (isSelected) {
               // 更换 button 背景
               that.onloadImage(that.fillIcon, targetEvent.target.getChildAt(0), that)
 
-              if (that.setAnswer[currentTarget]) {
-                const id = that.setAnswer[currentTarget].realId
-
-                const start = that.getSelectedOffsetValue({
-                  index: id,
-                  base: that.selectedDistanceBase
-                })
-                that.temporarySelectedContainer.getChildAt(id).x = start.x
-                that.temporarySelectedContainer.getChildAt(id).y = start.y
-                that.onloadImage(that.chooseIcon, that.temporarySelectedContainer.getChildAt(id).getChildAt(0), that)
-              }
-
               that.setAnswer[currentTarget] = {
                 questionId: targetEvent.target.id.questionId,
-                realId: targetEvent.target.id.realId
+                realId: targetEvent.target.id.realId,
+                moveId: currentTarget
               }
             }
             targetEvent.target.getChildAt(0).alpha = .9
@@ -220,7 +239,7 @@ export default class ResultPanel extends Hilo.Container {
   }
 
   findBlockIndex (dragX, dragY, type) {
-    const distanceFlagX = 205
+    const distanceFlagX = this.rect[2] + 5
     const distanceFlagY = 86
 
     // 获取所有 block 的位置
@@ -233,11 +252,14 @@ export default class ResultPanel extends Hilo.Container {
 
     // 过滤出相近的 block 的位置
     const filterArr = arr.filter((item, index) => {
-      if ((item.x > dragX - distanceFlagX) && (item.x < dragX + distanceFlagX)
-        && (item.y > dragY - distanceFlagY) && (item.y < dragY + distanceFlagY)) {
+      const x = Math.round(Math.abs(item.x - dragX))
+      const y = Math.round(Math.abs(item.y - dragY))
+
+      if ((item.x + distanceFlagX > dragX) && (item.x - distanceFlagX < dragX)
+        && (item.y - distanceFlagY < dragY) && (item.y + distanceFlagY > dragY) && x < 200) {
         item.index = index
-        item.distanceX = Math.round(Math.abs(item.x - dragX))
-        item.distanceY = Math.round(Math.abs(item.y - dragY))
+        item.distanceX = x
+        item.distanceY = y
         return item
       }
     })
@@ -332,5 +354,9 @@ export default class ResultPanel extends Hilo.Container {
       y: 56,
       alpha: this.setAnswer[index].questionId !== index ? 1 : 0
     }).addTo(blockCon)
+  }
+
+  findeQuestionsIndex (id) {
+    return this.setAnswer.findIndex(item => item && (item.questionId === id))
   }
 }

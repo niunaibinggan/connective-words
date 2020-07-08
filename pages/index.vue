@@ -73,9 +73,9 @@
 
       this.questionsPanelCanvas = this.createPanel('panel')
 
-      this.questionsSubmitCanvas = this.createSubmitButton()
+      // this.questionsSubmitCanvas = this.createSubmitButton()
 
-      this.resultCanvas = this.createResult()
+      // this.resultCanvas = this.createResult()
 
     },
     methods: {
