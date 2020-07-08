@@ -14,6 +14,7 @@
   import ResultModel from '~/components/game/resultModel'
   import ResetButton from '~/components/game/resetButton'
   import Text from '~/components/game/text'
+  import sortBy from 'lodash'
   export default {
     data () {
       return {
@@ -28,7 +29,8 @@
         resultCanvas: null,
         setAlpha: 1,
         answerError: [],
-        setAnswer: []
+        setAnswer: [],
+        rightAnser: []
       }
     },
     async mounted () {
@@ -43,6 +45,8 @@
       if (!questions) return this.$router.replace('/config')
 
       this.questions = JSON.parse(questions)
+
+      this.rightAnser = this.questions.content.map(item => item.id)
 
       this.shuffle(this.questions.content)
 
@@ -114,7 +118,7 @@
 
           this.setAnswer = this.questionsPanelCanvas.setAnswer
 
-          this.answerError = this.questionsPanelCanvas.setAnswer.filter((item, index) => item.questionId !== index)
+          this.answerError = this.questionsPanelCanvas.setAnswer.filter((item, index) => item.questionId !== this.rightAnser[index])
 
           this.isAllRight = !this.answerError.length
 

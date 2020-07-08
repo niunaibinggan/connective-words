@@ -338,7 +338,7 @@ export default class ResultPanel extends Hilo.Container {
       scaleY: 1,
       x: 162,
       y: 56,
-      alpha: this.setAnswer[index].questionId !== index ? 1 : 0
+      alpha: this.answerError.findIndex(item => item.moveId === index) !== -1 ? 1 : 0
     }).addTo(blockCon)
   }
 
