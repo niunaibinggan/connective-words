@@ -69,13 +69,13 @@
       })
 
       // 插入背景
-      // this.stage.addChild(exportScence)
+      this.stage.addChild(exportScence)
 
       this.questionsPanelCanvas = this.createPanel('panel')
 
-      // this.questionsSubmitCanvas = this.createSubmitButton()
+      this.questionsSubmitCanvas = this.createSubmitButton()
 
-      // this.resultCanvas = this.createResult()
+      this.resultCanvas = this.createResult()
 
     },
     methods: {

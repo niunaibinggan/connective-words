@@ -130,9 +130,7 @@ export default class ResultPanel extends Hilo.Container {
       this.includeArr = []
       e.target.getChildAt(0).alpha = 1
       targetEvent = e
-      console.log(e.target.id.realId)
       startDragRealId = this.findeQuestionsIndex(e.target.id.questionId)
-      console.log(startDragRealId)
     })
 
     blockCon.on("dragMove", (event) => {
@@ -143,30 +141,16 @@ export default class ResultPanel extends Hilo.Container {
 
       this.includeArr = this.findBlockIndex(event.target.x, event.target.y, 'arr')
 
-      console.log(this.includeArr)
-
-      // if (this.includeArr.length) {
-      //   this.includeArr.forEach(item => {
-      //     if (this.setAnswer[item])
-      //     else this.temporarySelectedContainer.children.map(item => item.alpha = .9)
-      //   })
-      // }
-      // } else {
-
-
-      // }
-
-      // // console.log(this.includeArr)
       this.setAnswer.forEach((item, index) => {
-
-        this.temporarySelectedContainer.getChildAt(item && item.realId).alpha = this.includeArr.includes(index) ? 0 : 1
-
+        if (item && !this.includeArr.includes(startDragRealId)) {
+          this.temporarySelectedContainer.getChildAt(item.realId).alpha = this.includeArr.includes(index) ? 0 : .9
+        }
       })
     })
-
     const that = this
 
     blockCon.on("dragEnd", (event) => {
+      this.temporarySelectedContainer.children.map(item => item.alpha = .9)
       const currentTarget = this.findBlockIndex(event.target.x, event.target.y, 'index')
 
       const isSelected = currentTarget !== -1
@@ -184,13 +168,14 @@ export default class ResultPanel extends Hilo.Container {
       if (isSelected) {
         x = this.temporaryQuestionsContainer.getChildAt(currentTarget).x
         y = this.temporaryQuestionsContainer.getChildAt(currentTarget).y - 340
-      }
 
+        if (selectedId !== -1) this.setAnswer[selectedId] = undefined
+      }
       if (!isSelected && selectedId !== -1) {
         this.setAnswer[selectedId] = undefined
       }
 
-      if (this.setAnswer[currentTarget] && currentTarget === this.setAnswer[currentTarget].moveId) {
+      if (this.setAnswer[currentTarget] && selectedId !== currentTarget) {
 
         const id = this.setAnswer[currentTarget].realId
 
@@ -267,6 +252,7 @@ export default class ResultPanel extends Hilo.Container {
     if (!filterArr.length) return type === 'arr' ? [] : -1
 
     if (type === 'arr') {
+      // this.temporarySelectedContainer.children.map(item => item.alpha = .9)
       return filterArr.map(item => item && item.index)
     }
 
@@ -303,9 +289,9 @@ export default class ResultPanel extends Hilo.Container {
   }
 
   getSelectedOffsetValue (data) {
-    const current = this.selectedTargetNumber && (data.index > this.selectedTargetNumber) ? data.index - this.selectedTargetNumber : data.index
+    const current = this.selectedTargetNumber && (data.index >= this.selectedTargetNumber) ? data.index - this.selectedTargetNumber : data.index
     const initX = (this.rect[2] + data.base) * current
-    const initY = this.selectedTargetNumber && (data.index > this.selectedTargetNumber) ? this.rect[3] + 20 : 0
+    const initY = this.selectedTargetNumber && (data.index >= this.selectedTargetNumber) ? this.rect[3] + 20 : 0
 
     return { x: initX, y: initY }
   }
