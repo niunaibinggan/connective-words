@@ -22,8 +22,8 @@
                v-model="item.text"
                @focus="focusInput(index)"
                @blur="blurInput(index)">
-        <input type="text"
-               class="root__item-symbol">
+        <!-- <input type="text"
+               class="root__item-symbol"> -->
       </li>
     </ul>
 
@@ -87,9 +87,9 @@
         this.questions.content.push({ id: createId, text: '' })
       },
       defalutConfig () {
-        let allInput = document.querySelectorAll('.root__question input')
+        // let allInput = document.querySelectorAll('.root__question input')
 
-        allInput[allInput.length - 1].value = '。'
+        // allInput[allInput.length - 1].value = '。'
 
         this.questions = {
           content: [
@@ -97,7 +97,7 @@
             { id: 1, text: '学生' },
           ],
           title: '连词成句',
-          result: '我是学生。'
+          result: '我是学生'
         }
       },
       async submitConfig () {
@@ -141,15 +141,16 @@
 </script>
 <style scoped>
   .root {
-    min-width: 600px;
+    min-width: 400px;
     margin: 0 auto;
     padding: 0 30px;
+    font-family: "Microsoft Yahei";
   }
   .root__question {
     margin: 0 auto;
     width: 100%;
-    min-width: 600px;
-    min-height: 300px;
+    min-width: 400px;
+    min-height: 150px;
     overflow: hidden;
     border: 1px solid #ccc;
     padding: 10px;
@@ -192,6 +193,7 @@
     border: none;
     background: none;
     font-size: 14px;
+    color: #5f6c65;
   }
   .root__item-text {
     display: inline-block;
@@ -206,7 +208,7 @@
     position: fixed;
     width: 100%;
     height: 40px;
-    min-width: 450px;
+    min-width: 400px;
     bottom: 5%;
     left: 0;
     text-align: center;

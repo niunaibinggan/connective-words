@@ -30,7 +30,8 @@
         setAlpha: 1,
         answerError: [],
         setAnswer: [],
-        rightAnser: []
+        rightAnser: [],
+        timer: null
       }
     },
     async mounted () {
@@ -74,11 +75,8 @@
 
       // 插入背景
       this.stage.addChild(exportScence)
-
-      this.questionsPanelCanvas = this.createPanel('panel')
-
       this.questionsSubmitCanvas = this.createSubmitButton()
-
+      this.questionsPanelCanvas = this.createPanel('panel')
       this.resultCanvas = this.createResult()
 
     },
@@ -87,6 +85,7 @@
         const { errorIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
         const panel = new Panel({
+          id: 'panel',
           x: 0,
           y: 0,
           errorIcon,
@@ -98,7 +97,14 @@
           answerError: this.answerError,
           setAnswer: this.setAnswer
         })
+
         this.stage.addChild(panel)
+        if (type === 'panel') {
+          this.timer = setInterval(() => {
+            this.questionsSubmitCanvas.visible = this.questionsPanelCanvas.setAnswer.every(item => item)
+          }, 300)
+        }
+
         return panel
       },
       createSubmitButton () {
@@ -108,11 +114,12 @@
           y: (1080 - 96) / 2 + 430,
           images: this.assets.submitButton,
           rect: [0, 0, 329, 96],
-          visible: true,
+          visible: false,
           alpha: this.setAlpha,
         })
 
         subBtn.on(Hilo.event.POINTER_START, (e) => {
+          clearInterval(this.timer)
 
           if (!this.questionsPanelCanvas.setAnswer.every(item => item)) return
 
@@ -190,8 +197,6 @@
 
         this.questionsResetCanvas.visible = false
 
-        this.questionsSubmitCanvas.visible = true
-
         // 重置基础信息
         this.setAnswer = []
         this.answerError = []
@@ -200,7 +205,6 @@
 
         // 重置后创建
         this.questionsPanelCanvas = this.createPanel('panel')
-
       },
       seachHanel () {
         this.resultCanvas.visible = true

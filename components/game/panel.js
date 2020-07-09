@@ -47,11 +47,13 @@ export default class ResultPanel extends Hilo.Container {
 
   creatContainer () {
     this.temporaryQuestionsContainer = new Hilo.Container({
+      id: 'questions',
       x: 220,
       y: 320,
     }).addTo(this)
 
     this.temporarySelectedContainer = new Hilo.Container({
+      id: 'select',
       x: 220,
       y: 660,
     }).addTo(this)
@@ -211,6 +213,10 @@ export default class ResultPanel extends Hilo.Container {
         }
       )
     })
+
+    document.ontouchstart = (e) => {
+      e.preventDefault();
+    }
   }
 
   onloadImage (image, target, _this) {
