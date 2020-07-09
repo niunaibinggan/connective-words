@@ -213,10 +213,6 @@ export default class ResultPanel extends Hilo.Container {
         }
       )
     })
-
-    document.ontouchstart = (e) => {
-      e.preventDefault();
-    }
   }
 
   onloadImage (image, target, _this) {
@@ -319,8 +315,6 @@ export default class ResultPanel extends Hilo.Container {
     return blockCon
   }
   creatText (blockCon, text, id) {
-
-    console.log(text)
     new Text({
       id,
       text,
