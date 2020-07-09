@@ -319,10 +319,12 @@ export default class ResultPanel extends Hilo.Container {
     return blockCon
   }
   creatText (blockCon, text, id) {
+
+    console.log(text)
     new Text({
       id,
       text,
-      fontSize: 34,
+      fontSize: text.length < 4 ? 34 : 34 - Math.round(text.length / 3) * 5,
       bold: true,
       textAlign: 'center',
       visible: true,
@@ -330,7 +332,7 @@ export default class ResultPanel extends Hilo.Container {
       reTextWidth: this.rect[2],
       height: this.rect[3] - 27,
       x: 0,
-      y: 27,
+      y: Math.floor(text.length / 5) ? 27 + (34 - (34 - Math.round(text.length / 3) * 5)) / 2 : 27,
       color: '#fff',
     }).addTo(blockCon)
   }
