@@ -149,7 +149,7 @@
     margin: 0 auto;
     width: 100%;
     min-width: 600px;
-    min-height: 400px;
+    min-height: 300px;
     overflow: hidden;
     border: 1px solid #ccc;
     padding: 10px;
