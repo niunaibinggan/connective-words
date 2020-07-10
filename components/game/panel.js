@@ -12,6 +12,7 @@ export default class ResultPanel extends Hilo.Container {
     else this.setAnswer = properties.setAnswer
 
     this.answerError = properties.answerError
+    this.rightIcon = properties.rightIcon
 
     // properties.type  'panel' |'resutl' 两种种类型
     this.panelType = properties.type
@@ -30,6 +31,7 @@ export default class ResultPanel extends Hilo.Container {
   chooseIcon = require('~/static/choose_button.png')
   fillIcon = require('~/static/button.png')
   errorIcon = ''
+  rightIcon = ''
   stage = null
   temporaryQuestionsContainer = null
   temporarySelectedContainer = null
@@ -332,15 +334,21 @@ export default class ResultPanel extends Hilo.Container {
   }
 
   creatError (blockCon, index) {
+    let alpha = null
+    if (this.answerError.length) {
+      alpha = this.answerError.findIndex(item => item.moveId === index) !== -1 ? 1 : 0
+    } else {
+      alpha = this.setAnswer.length - 1 === index ? 1 : 0
+    }
     new Hilo.Bitmap({
-      image: this.errorIcon,
-      rect: [0, 0, 44, 44],
+      image: this.answerError.length ? this.errorIcon : this.rightIcon,
+      rect: this.answerError.length ? [0, 0, 44, 44] : [0, 0, 48, 44],
       visible: true,
       scaleX: 1,
       scaleY: 1,
-      x: 162,
+      x: this.answerError.length ? 162 : 172,
       y: 56,
-      alpha: this.answerError.findIndex(item => item.moveId === index) !== -1 ? 1 : 0
+      alpha,
     }).addTo(blockCon)
   }
 

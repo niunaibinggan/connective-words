@@ -82,13 +82,14 @@
     },
     methods: {
       createPanel (type = 'panel') {
-        const { errorIcon } = this.assets
+        const { errorIcon, rightIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
         const panel = new Panel({
           id: 'panel',
           x: 0,
           y: 0,
           errorIcon,
+          rightIcon,
           questions: this.questions.content,
           alpha: this.setAlpha,
           answerError: this.answerError,

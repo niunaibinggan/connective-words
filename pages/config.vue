@@ -21,7 +21,8 @@
                placeholder="输入正确答案"
                v-model="item.text"
                @focus="focusInput(index)"
-               @blur="blurInput(index)">
+               @blur="blurInput(index)"
+               @keyup="keyupInput($event,index)">
         <!-- <input type="text"
                class="root__item-symbol"> -->
       </li>
@@ -46,6 +47,7 @@
 </template>
 
 <script>
+  import save from '~/components/game/save'
   export default {
     data () {
       return {
@@ -71,6 +73,20 @@
           this.current = -1
         }, 200)
       },
+      async keyupInput (e, index) {
+        if (e.code === 'Enter') {
+          e.srcElement.blur()
+          if (index === this.questions.content.length - 1) {
+
+            await this.addQuestion()
+
+            this.changeHandelInput(this.questions.content.length - 1, this.questions.content.length - 1)
+
+          } else {
+            this.changeHandelInput(index + 1, index + 1)
+          }
+        }
+      },
       deleteIem (index) {
         this.questions.content.splice(index, 1)
         this.current = -1
@@ -87,10 +103,6 @@
         this.questions.content.push({ id: createId, text: '' })
       },
       defalutConfig () {
-        // let allInput = document.querySelectorAll('.root__question input')
-
-        // allInput[allInput.length - 1].value = '。'
-
         this.questions = {
           content: [
             { id: 0, text: '我是' },
@@ -136,6 +148,13 @@
         }
         this.$router.replace('/')
       },
+      changeHandelInput (number, nextNumber) {
+        let allInput = document.querySelectorAll('.root__question input')
+
+        allInput[number].focus()
+
+        this.current = nextNumber
+      }
     }
   }
 </script>
@@ -267,7 +286,7 @@
     background: #0ed04b;
     font-size: 12px;
     border-radius: 4px;
-    color: #5f6c65;
+    color: #fff;
     cursor: pointer;
   }
 

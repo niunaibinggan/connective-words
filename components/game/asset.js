@@ -7,6 +7,7 @@ export default function () {
     queue: null,
     bg: null,
     errorIcon: null,
+    rightIcon: null,
     titleBg: null,
     submitButton: null,
     errorModel: null,
@@ -21,6 +22,7 @@ export default function () {
       const resources = [
         { id: 'bg', src: require('~/static/bg.png') },
         { id: 'errorIcon', src: require('~/static/error_icon.png') },
+        { id: 'rightIcon', src: require('~/static/right_icon.png') },
         { id: 'titleBg', src: require('~/static/title.png') },
         { id: 'submit', src: require('~/static/submit.png') },
         { id: 'errorModel', src: require('~/static/answer_error.png') },
@@ -55,6 +57,7 @@ export default function () {
     onComplete (e) {
       this.bg = this.queue.get('bg').content
       this.errorIcon = this.queue.get('errorIcon').content
+      this.rightIcon = this.queue.get('rightIcon').content
       this.titleBg = this.queue.get('titleBg').content
       this.submitButton = this.queue.get('submit').content
       this.rightModel = this.queue.get('rightModel').content
