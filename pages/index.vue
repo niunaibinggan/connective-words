@@ -86,7 +86,7 @@
           y: 0,
           errorIcon,
           rightIcon,
-          questions: this.questions.content,
+          questions: this.questions,
           alpha: this.setAlpha,
           answerError: this.answerError,
           type,
