@@ -28,11 +28,7 @@ export default class ExportScence extends Hilo.Container {
     // 时间倒计时
     new Text({
       text: properties.title,
-<<<<<<< HEAD
       fontSize: properties.title.length < 9 ? 45 : 45 - Math.round(properties.title.length / 4) * 5,
-=======
-      fontSize: properties.title.length < 9 ? 45 : 45 - Math.round(properties.title.length / 3) * 5,
->>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
       bold: true,
       textAlign: 'center',
       textVAlign: 'middle',
@@ -40,15 +36,9 @@ export default class ExportScence extends Hilo.Container {
       visible: true,
       cc: 3,
       alpha: 1,
-<<<<<<< HEAD
       reTextWidth: 484,
       x: (1920 - 484) / 2,
       y: properties.title.length < 9 ? 20 : 20 + (45 - (45 - Math.round(properties.title.length / 4) * 5)) / 2,
-=======
-      reTextWidth: 387,
-      x: 45,
-      y: properties.title.length < 9 ? 50 : 50 + (45 - (45 - Math.round(properties.title.length / 3) * 5)) / 2,
->>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
       color: '#ffffff',
     }).addTo(this)
   }

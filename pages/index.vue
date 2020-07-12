@@ -86,11 +86,7 @@
           y: 0,
           errorIcon,
           rightIcon,
-<<<<<<< HEAD
           questions: this.questions,
-=======
-          questions: this.questions.content,
->>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
           alpha: this.setAlpha,
           answerError: this.answerError,
           type,
