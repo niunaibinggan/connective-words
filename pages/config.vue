@@ -5,35 +5,64 @@
              v-model="questions.title"
              placeholder="请输入标题">
     </h3>
-    <p style="padding: 10px 0;">题目</p>
-    <ul class="root__question">
-      <li class="root__question-item"
-          v-for="(item, index) in questions.content"
-          :key="item.id">
-        <span class="root__item-close"
-              v-if="current === index && questions.content.length >2"
-              :id="'delete'+index"
-              @click="deleteIem(index)">+</span>
-        <span class="root__item-text"
-              v-if="item.text">{{item.text}}</span>
-        <input type="text"
-               class="root__item-input"
-               placeholder="输入正确答案"
-               v-model="item.text"
-               @focus="focusInput(index)"
-               @blur="blurInput(index)">
-        <!-- <input type="text"
-               class="root__item-symbol"> -->
-      </li>
-    </ul>
+    <div class="root__name">
+      <span class="root__name-drag root__name-common">拖动元素</span>
+      <span class="root__name-number"><span style="color: #0ed04b">{{questions.left.concat(questions.useless).length}} </span>/ {{target}}</span>
+      <span class="root__name-target root__name-common">配对目标</span>
+    </div>
+    <div class="root__warpper">
+      <div class=root__item
+           v-for="(item,index) in questions.left"
+           :key="item.id">
+        <p class="root__content">
+          <span class="root__delete"
+                v-if="questions.left.length > 1"
+                @click="deleteHandel('content',index)">+</span>
+          <span class="root__content-left root__content-common">
+            <span class="root__item-text"
+                  v-if="item.text">{{item.text}}</span>
+            <input type="text"
+                   class="root__item-input"
+                   placeholder="输入正确答案"
+                   v-model="item.text">
+          </span>
+          <span class="root__line"></span>
+          <span class="root__content-right root__content-common">
+            <span class="root__item-text"
+                  v-if="questions.right[index].text">{{questions.right[index].text}}</span>
+            <input type="text"
+                   class="root__item-input"
+                   placeholder="输入正确答案"
+                   v-model="questions.right[index].text">
+          </span>
+        </p>
+      </div>
+      <div class="root__item root__item-useless"
+           v-for="(item,index) in questions.useless"
+           :key="item.id">
+        <p class="root__content">
+          <span class="root__delete"
+                v-if="questions.left.length > 1"
+                @click="deleteHandel('useless',index)">+</span>
+          <span class="root__content-left root__content-common root__content-useless">
+            <span class="root__item-text"
+                  v-if="item.text">{{item.text}}</span>
+            <input type="text"
+                   class="root__item-input"
+                   placeholder="输入干扰项"
+                   v-model="item.text">
+          </span>
+        </p>
+      </div>
+    </div>
 
     <div class="root__bottom">
       <div class="root__bottom-contnet">
-
         <span class="root__add"
-              @click="addQuestion">
-          +添加填空({{questions.content.length}}/{{target}})
-        </span>
+              style="float: left"
+              @click="addQuestion('useless')">增加干扰项</span>
+        <span class="root__add"
+              @click="addQuestion('content')">增加配对</span>
 
         <span class="root__submit"
               @click="submitConfig">完成</span>
@@ -41,70 +70,82 @@
               @click="defalutConfig">导入范例</span>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
+  import save from '~/components/game/save'
   export default {
     data () {
       return {
         questions: {
-          content: [
+          left: [
             { id: 0, text: '' },
             { id: 1, text: '' },
           ],
+          right: [
+            { id: 0, text: '' },
+            { id: 1, text: '' },
+          ],
+          useless: [
+            { id: -1, text: '' }
+          ],
           title: ''
         },
-        target: 10,
-        current: -1,
-        timer: null
+        target: 7,
       }
     },
     methods: {
-      focusInput (index) {
-        clearTimeout(this.timer)
-        this.current = index
+      deleteHandel (type, index) {
+        if (type === 'content') {
+          this.questions.left.splice(index, 1)
+          this.questions.right.splice(index, 1)
+          return
+        }
+        this.questions.useless.splice(index, 1)
       },
-      blurInput (index) {
-        this.timer = setTimeout(() => {
-          this.current = -1
-        }, 200)
-      },
-      deleteIem (index) {
-        this.questions.content.splice(index, 1)
-        this.current = -1
-      },
-      addQuestion () {
-        if (this.questions.content.length >= this.target) {
+      addQuestion (type) {
+        if (this.questions.left.concat(this.questions.useless).length >= this.target) {
           this.$message({
             message: `最多添加${this.target}道题目`,
             type: 'warning'
           })
           return
         }
-        let createId = this.questions.content[this.questions.content.length - 1].id + 1
-        this.questions.content.push({ id: createId, text: '' })
-      },
-      defalutConfig () {
-        // let allInput = document.querySelectorAll('.root__question input')
-
-        // allInput[allInput.length - 1].value = '。'
-
-        this.questions = {
-          content: [
-            { id: 0, text: '我是' },
-            { id: 1, text: '学生' },
-          ],
-          title: '连词成句',
-          result: '我是学生'
+        if (type === 'content') {
+          let createId = this.questions.left[this.questions.left.length - 1].id + 1
+          this.questions.left.push({ id: createId, text: '' })
+          this.questions.right.push({ id: createId, text: '' })
+          return
         }
+        let createId = this.questions.useless.length ? this.questions.useless[this.questions.useless.length - 1].id - 1 : -1
+        this.questions.useless.push({ id: createId, text: '' })
       },
       async submitConfig () {
-        const leftVerify = this.questions.content.every(item => item.text)
+        const leftVerify = this.questions.left.every(item => item.text)
         if (!leftVerify) {
           this.$message({
-            message: `内容不能为空！`,
+            message: '题目不能为空！',
+            type: 'warning'
+          })
+          return
+        }
+
+        const rightVerify = this.questions.right.every(item => item.text)
+
+        if (!rightVerify) {
+          this.$message({
+            message: `答案不能为空！`,
+            type: 'warning'
+          })
+          return
+        }
+
+        const uselessVerify = this.questions.useless.every(item => item.text)
+
+        if (!uselessVerify) {
+          this.$message({
+            message: `干扰项不能为空！`,
             type: 'warning'
           })
           return
@@ -118,16 +159,21 @@
           return
         }
 
-        let allInput = document.querySelectorAll('.root__question input')
+        const leftEqualArr = this.questions.left.concat(this.questions.useless).map(item => item.text.replace(/\s+/g, ""))
+        const leftFilter = Array.from(new Set(leftEqualArr))
 
-        let result = ''
-        allInput.forEach((item, index) => {
-          result += item.value.trim()
-        })
+        // const rightEqualArr = this.questions.right.map(item => item.text.replace(/\s+/g, ""))
+        // const rightFilter = Array.from(new Set(rightEqualArr))
+
+        if (leftEqualArr.length !== leftFilter.length) {
+          this.$message({
+            message: `配对同侧内容不能重复`,
+            type: 'warning'
+          })
+          return
+        }
+
         let setQuestion = this.questions
-
-        setQuestion.result = result
-
         try {
           const thumbnail = await save(setQuestion)
           await this.$testsave(thumbnail, JSON.stringify(setQuestion))
@@ -135,50 +181,141 @@
           localStorage.setItem('questionsConfig', JSON.stringify(setQuestion))
         }
         this.$router.replace('/')
+
+      },
+      defalutConfig () {
+        this.questions = {
+          left: [
+            { id: 0, text: '1+3' },
+            { id: 1, text: '2+8' },
+          ],
+          right: [
+            { id: 0, text: 4 },
+            { id: 1, text: 10 },
+          ],
+          useless: [
+            { id: -1, text: '2+1' }
+          ],
+          title: '知识配对'
+        }
       },
     }
   }
 </script>
 <style scoped>
   .root {
-    min-width: 400px;
+    min-width: 720px;
     margin: 0 auto;
     padding: 0 30px;
     font-family: "Microsoft Yahei";
   }
-  .root__question {
+
+  .root__warpper {
+    max-width: 1100px;
     margin: 0 auto;
-    width: 100%;
-    min-width: 400px;
-    min-height: 150px;
-    overflow: hidden;
-    border: 1px solid #ccc;
-    padding: 10px;
+    min-width: 695px;
   }
-  .root__question-item {
-    float: left;
-    padding: 5px 10px;
+
+  .root__item {
+    padding: 8px;
     cursor: pointer;
-    border: 1px solid #ccc;
-    margin-right: 30px;
-    margin-bottom: 10px;
+  }
+
+  .root__item:hover .root__content-common {
+    border: 1px solid #0ed04b;
+  }
+
+  .root__item-useless:hover .root__content-common {
+    border: 1px solid #ffce42;
+    background: rgba(255, 236, 192, 0.4);
+  }
+
+  .root__item-useless .root__content-common {
+    background: #fdf6ec;
+  }
+
+  .root__content {
     position: relative;
-    height: 36px;
-    min-width: 110px;
+    max-width: 1000px;
+    min-width: 640px;
+    margin: 0 auto;
+    height: 40px;
+    cursor: pointer;
+  }
+  .root__item:hover .root__delete {
+    display: block;
+  }
+  .root__delete {
+    display: none;
+    position: absolute;
+    left: -30px;
+    top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #5f6c65;
+    width: 23px;
+    height: 23px;
+    text-align: center;
+    line-height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 100px;
+    transform: rotate(45deg);
+    cursor: pointer;
+  }
+
+  .root__delete:hover {
+    color: #fff;
+    background: #ff8197;
+    border: 1px solid #ff8197;
+  }
+
+  .root__content-left {
+    float: left;
+  }
+
+  .root__content-right {
+    float: right;
+  }
+
+  .root__content-common {
+    width: 320px;
+    height: 40px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 4px;
+    line-height: 38px;
+    font-size: 14px;
+    position: relative;
     text-align: center;
   }
-  .root__item-close {
+
+  .root__item-text {
+    display: inline-block;
+    margin: 0 auto;
+    background: #def2da;
+    color: transparent;
+    border-radius: 4px;
+    height: 30px;
+    padding: 0 7px;
+    margin-top: 4px;
+  }
+
+  .root__line {
+    width: calc(100% - 640px);
     position: absolute;
-    right: -10px;
-    top: -10px;
-    width: 20px;
-    height: 20px;
-    border-radius: 100px;
-    background: #fff;
-    border: 1px solid #ccc;
-    text-align: center;
-    line-height: 16px;
-    transform: rotate(45deg);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: 1px;
+    background: #ccc;
+  }
+
+  .root__item:hover .root__line {
+    background: #0ed04b;
+  }
+
+  .root__content-useless {
+    border: 1px solid #f9e099;
   }
 
   .root__item-input {
@@ -186,30 +323,102 @@
     display: inline-block;
     left: 0;
     width: 100%;
-    height: 100%;
-    height: 25px;
-    line-height: 25px;
+    height: 38px;
     text-align: center;
     border: none;
     background: none;
     font-size: 14px;
     color: #5f6c65;
+    cursor: pointer;
   }
-  .root__item-text {
-    display: inline-block;
-    margin: 0 auto;
-    background: #def2da;
-    color: transparent;
-    border-radius: 4px;
-    padding: 2px 7px;
+
+  .root__title-set {
+    font-size: 16px;
+    color: #5f5c5c;
+    margin: 3% 0 2%;
+    text-align: center;
+    width: 100%;
+  }
+
+  .root__title-set input {
+    color: #152c2c;
+    border: none;
+    border: 1px solid #cccccc;
+    margin-left: 5px;
+    padding: 10px 10px;
+    width: 20%;
+    font-size: 16px;
+  }
+
+  .root__name {
+    overflow: hidden;
+    max-width: 1000px;
+    min-width: 690px;
+    position: relative;
+    margin: 10px auto 20px;
+  }
+
+  .root__name-drag {
+    float: left;
+  }
+
+  .root__name-target {
+    float: right;
+    margin-right: 100px;
+  }
+
+  .root__name-common::before {
+    position: absolute;
+    left: -100px;
+    top: 16px;
+    content: "";
+    width: 100px;
+    height: 1px;
+    background: #ccc;
+  }
+
+  .root__name-common {
+    position: relative;
+    border: 1px solid #ccc;
+    border-radius: 100px;
+    margin-left: 100px;
+    width: 120px;
+    height: 35px;
+    line-height: 33px;
+    text-align: center;
+    color: #5f6c65;
+    font-size: 14px;
+  }
+
+  .root__name-common::after {
+    position: absolute;
+    left: 120px;
+    top: 16px;
+    content: "";
+    width: 100px;
+    height: 1px;
+    background: #ccc;
+  }
+
+  .root__name-number {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    line-height: 39px;
+    text-align: center;
+    color: #5f6c65;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 14px;
   }
 
   .root__bottom {
     position: fixed;
     width: 100%;
     height: 40px;
-    min-width: 400px;
-    bottom: 5%;
+    min-width: 450px;
+    bottom: 10px;
     left: 0;
     text-align: center;
   }
@@ -222,21 +431,41 @@
   .root__add {
     display: inline-block;
     padding: 8px 20px;
-    background: #ffb647;
     font-size: 12px;
-    border-radius: 130px;
-    color: #fff;
+    color: #5f6c65;
     cursor: pointer;
+    position: relative;
+  }
+
+  .root__add::after {
+    content: "+";
+    font-weight: bold;
+    color: #0ed04b;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    line-height: 15px;
+    border: 1px solid #ccc;
+    border-radius: 100px;
+    cursor: pointer;
+    position: absolute;
+    left: -2px;
+    font-size: 16px;
   }
 
   .root__add:hover {
-    background: #ffa721;
+    color: #0ed04b;
+  }
+  .root__add:hover.root__add::after {
+    background: #0ed04b;
+    border: 1px solid #0ed04b;
+    color: #fff;
   }
 
   .root__title-set {
     font-size: 16px;
     color: #5f5c5c;
-    margin: 3% 0 2%;
+    margin: 20px 0;
     text-align: center;
     width: 100%;
   }
@@ -247,6 +476,7 @@
     margin-left: 5px;
     padding: 10px 10px;
     width: 20%;
+    font-family: "微软雅黑";
     font-size: 16px;
   }
 
@@ -267,17 +497,7 @@
     background: #0ed04b;
     font-size: 12px;
     border-radius: 4px;
-    color: #5f6c65;
+    color: #fff;
     cursor: pointer;
-  }
-
-  .root__item-symbol {
-    border: none;
-    width: 30px;
-    position: absolute;
-    top: 10px;
-    right: -30px;
-    text-align: center;
-    background: none;
   }
 </style>

@@ -11,10 +11,9 @@
   import ExportScence from '~/components/game/exportScence'
   import SubmitButton from '~/components/game/submitButton'
   import Panel from '~/components/game/panel'
-  import ResultModel from '~/components/game/resultModel'
-  import ResetButton from '~/components/game/resetButton'
-  import Text from '~/components/game/text'
-  import sortBy from 'lodash'
+  // import ResultModel from '~/components/game/resultModel'
+  // import ResetButton from '~/components/game/resetButton'
+  // import Text from '~/components/game/text'
   export default {
     data () {
       return {
@@ -30,7 +29,6 @@
         setAlpha: 1,
         answerError: [],
         setAnswer: [],
-        rightAnser: [],
         timer: null
       }
     },
@@ -43,13 +41,11 @@
         questions = localStorage.getItem('questionsConfig')
       }
 
-      if (!questions) return this.$router.replace('/config')
+      // if (!questions) return this.$router.replace('/config')
 
       this.questions = JSON.parse(questions)
 
-      this.rightAnser = this.questions.content.map(item => item.id)
-
-      this.shuffle(this.questions.content)
+      this.shuffle(this.questions.left.concat(this.questions.useless))
 
       // 预加载图片
       const Assets = AssetsFectory()
@@ -77,18 +73,19 @@
       this.stage.addChild(exportScence)
       this.questionsSubmitCanvas = this.createSubmitButton()
       this.questionsPanelCanvas = this.createPanel('panel')
-      this.resultCanvas = this.createResult()
+      // this.resultCanvas = this.createResult()
 
     },
     methods: {
       createPanel (type = 'panel') {
-        const { errorIcon } = this.assets
+        const { errorIcon, rightIcon } = this.assets
         // 插入题目 两个板块之间的距离 300 每个背景板的长度 499 106
         const panel = new Panel({
           id: 'panel',
           x: 0,
           y: 0,
           errorIcon,
+          rightIcon,
           questions: this.questions.content,
           alpha: this.setAlpha,
           answerError: this.answerError,
@@ -99,11 +96,11 @@
         })
 
         this.stage.addChild(panel)
-        if (type === 'panel') {
-          this.timer = setInterval(() => {
-            this.questionsSubmitCanvas.visible = this.questionsPanelCanvas.setAnswer.every(item => item)
-          }, 300)
-        }
+        // if (type === 'panel') {
+        //   this.timer = setInterval(() => {
+        //     this.questionsSubmitCanvas.visible = this.questionsPanelCanvas.setAnswer.every(item => item)
+        //   }, 300)
+        // }
 
         return panel
       },
@@ -114,7 +111,7 @@
           y: (1080 - 96) / 2 + 430,
           images: this.assets.submitButton,
           rect: [0, 0, 329, 96],
-          visible: false,
+          visible: true,
           alpha: this.setAlpha,
         })
 
@@ -241,7 +238,7 @@
           arr[randomIndex] = arr[i];
           arr[i] = itemAtIndex;
         }
-        this.questions.content = arr
+        this.questions.concat = arr
       },
     }
   }
