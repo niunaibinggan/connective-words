@@ -5,6 +5,7 @@
              v-model="questions.title"
              placeholder="请输入标题">
     </h3>
+<<<<<<< HEAD
     <div class="root__name">
       <span class="root__name-drag root__name-common">拖动元素</span>
       <span class="root__name-number"><span style="color: #0ed04b">{{questions.left.concat(questions.useless).length}} </span>/ {{target}}</span>
@@ -55,6 +56,30 @@
         </p>
       </div>
     </div>
+=======
+    <p style="padding: 10px 0;">题目</p>
+    <ul class="root__question">
+      <li class="root__question-item"
+          v-for="(item, index) in questions.content"
+          :key="item.id">
+        <span class="root__item-close"
+              v-if="current === index && questions.content.length >2"
+              :id="'delete'+index"
+              @click="deleteIem(index)">+</span>
+        <span class="root__item-text"
+              v-if="item.text">{{item.text}}</span>
+        <input type="text"
+               class="root__item-input"
+               placeholder="输入正确答案"
+               v-model="item.text"
+               @focus="focusInput(index)"
+               @blur="blurInput(index)"
+               @keyup="keyupInput($event,index)">
+        <!-- <input type="text"
+               class="root__item-symbol"> -->
+      </li>
+    </ul>
+>>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
 
     <div class="root__bottom">
       <div class="root__bottom-contnet">
@@ -96,6 +121,7 @@
       }
     },
     methods: {
+<<<<<<< HEAD
       deleteHandel (type, index) {
         if (type === 'content') {
           this.questions.left.splice(index, 1)
@@ -103,6 +129,34 @@
           return
         }
         this.questions.useless.splice(index, 1)
+=======
+      focusInput (index) {
+        clearTimeout(this.timer)
+        this.current = index
+      },
+      blurInput (index) {
+        this.timer = setTimeout(() => {
+          this.current = -1
+        }, 200)
+      },
+      async keyupInput (e, index) {
+        if (e.code === 'Enter') {
+          e.srcElement.blur()
+          if (index === this.questions.content.length - 1) {
+
+            await this.addQuestion()
+
+            this.changeHandelInput(this.questions.content.length - 1, this.questions.content.length - 1)
+
+          } else {
+            this.changeHandelInput(index + 1, index + 1)
+          }
+        }
+      },
+      deleteIem (index) {
+        this.questions.content.splice(index, 1)
+        this.current = -1
+>>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
       },
       addQuestion (type) {
         if (this.questions.left.concat(this.questions.useless).length >= this.target) {
@@ -112,11 +166,25 @@
           })
           return
         }
+<<<<<<< HEAD
         if (type === 'content') {
           let createId = this.questions.left[this.questions.left.length - 1].id + 1
           this.questions.left.push({ id: createId, text: '' })
           this.questions.right.push({ id: createId, text: '' })
           return
+=======
+        let createId = this.questions.content[this.questions.content.length - 1].id + 1
+        this.questions.content.push({ id: createId, text: '' })
+      },
+      defalutConfig () {
+        this.questions = {
+          content: [
+            { id: 0, text: '我是' },
+            { id: 1, text: '学生' },
+          ],
+          title: '连词成句',
+          result: '我是学生'
+>>>>>>> 88b17c095ed24ce2fb5cb1da34678e44edef3474
         }
         let createId = this.questions.useless.length ? this.questions.useless[this.questions.useless.length - 1].id - 1 : -1
         this.questions.useless.push({ id: createId, text: '' })
@@ -199,6 +267,13 @@
           title: '知识配对'
         }
       },
+      changeHandelInput (number, nextNumber) {
+        let allInput = document.querySelectorAll('.root__question input')
+
+        allInput[number].focus()
+
+        this.current = nextNumber
+      }
     }
   }
 </script>
